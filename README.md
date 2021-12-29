@@ -33,7 +33,7 @@
 效果展示
 --
 
-下左图是现在的莫斯科，下右图是20年前的莫斯科。<br>
+下左图是20年前的莫斯科，下中图是现在的莫斯科，下右图是实现的效果。<br>
 ![效果图](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/example.png)
 
 工程结构
