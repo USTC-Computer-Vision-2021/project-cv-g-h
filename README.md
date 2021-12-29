@@ -38,6 +38,25 @@
 
 工程结构
 --
+```
+.
+├── code
+│   ├── ada_nonmax_suppression.m
+│   ├── blend.m
+│   ├── dist2.m
+│   ├── getFeatureDescriptor.m
+│   ├── getHomographyMatrix.m
+│   ├── getNewSize.m
+│   ├── harris.m
+│   ├── image_stitching.m
+│   ├── main.m
+│   └── ransacfithomography.m
+├── input
+│   ├── 1.jpg
+│   └── 2.jpg
+└── output
+    └── result.jpg
+```
 
 运行说明
 --
