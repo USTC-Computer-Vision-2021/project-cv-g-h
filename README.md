@@ -25,6 +25,7 @@
 
 效果展示
 --
+下左图是现在的莫斯科，下右图是20年前的莫斯科<br>
 ![现在的莫斯科](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Now.png)
 ![20年前的莫斯科](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Past.png)
 
