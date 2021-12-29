@@ -1,4 +1,4 @@
-基于图像拼接的A Look into the past
+基于图像拼接的A Look Into the Past
 ===
 成员及分工
 ---
