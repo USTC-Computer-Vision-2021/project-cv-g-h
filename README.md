@@ -34,10 +34,7 @@
 --
 
 下左图是现在的莫斯科，下右图是20年前的莫斯科。<br>
-![现在的莫斯科](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Now.png)
-![20年前的莫斯科](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Past.png)<br>
-下图是我们的成果，把20年前的建筑，放入了现在的城市大背景中。<br>
-![效果](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/final_result.png)
+![效果图](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/example.png)
 
 工程结构
 --
