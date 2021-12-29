@@ -25,6 +25,7 @@
 
 效果展示
 --
+![](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Now.png)
 
 工程结构
 --
