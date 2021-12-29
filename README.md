@@ -25,7 +25,9 @@
 
 效果展示
 --
+这是现在的莫斯科和20年前的莫斯科的照片
 ![](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Now.png)
+![](https://github.com/USTC-Computer-Vision-2021/project-cv-g-h/blob/main/Past.png)
 
 工程结构
 --
