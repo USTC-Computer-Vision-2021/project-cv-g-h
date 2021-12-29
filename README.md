@@ -31,3 +31,9 @@
 
 运行说明
 --
+'''python
+pip install opencv-python==3.4.2.16
+pip install opencv-contrib-python==3.4.2.16
+pip install numpy
+python main.py
+'''
