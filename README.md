@@ -100,53 +100,40 @@ end
 ```
 5.根据上面获得的成对描述符距离矩阵选择假定的匹配项。<br>
 ```
-function [hh] = getHomographyMatrix(point_ref, point_src, npoints)
+dist = dist2(des_A,des_B);
+[ord_dist, index] = sort(dist, 2);
+ratio = ord_dist(:,1)./ord_dist(:,2);
+threshold = 0.5;
+idx = ratio<threshold;
 
-x_ref = point_ref(1,:)';
-y_ref = point_ref(2,:)';
-x_src = point_src(1,:)';
-y_src = point_src(2,:)';
+x_A = x_A(idx);
+y_A = y_A(idx);
+x_B = x_B(index(idx,1));
+y_B = y_B(index(idx,1));
+npoints = length(x_A);
 
-A = zeros(npoints*2,8);
-A(1:2:end,1:3) = [x_ref, y_ref, ones(npoints,1)];
-A(2:2:end,4:6) = [x_ref, y_ref, ones(npoints,1)];
-A(1:2:end,7:8) = [-x_ref.*x_src, -y_ref.*x_src];
-A(2:2:end,7:8) = [-x_ref.*y_src, -y_ref.*y_src];
-
-B = [x_src, y_src];
-B = reshape(B',npoints*2,1);
-
-h = A\B;
-
-hh = [h(1),h(2),h(3);h(4),h(5),h(6);h(7),h(8),1];
+matcher_A = [y_A, x_A, ones(npoints,1)]'; 
+matcher_B = [y_B, x_B, ones(npoints,1)]'; 
 ```
 6.运行 RANSAC 以估计仿射变换并将一个图像映射到另一个图像上。<br>
 ```
-function [hh, inliers] = ransacfithomography(ref_P, dst_P, npoints, threshold)
+[hh, ~] = ransacfithomography(matcher_B, matcher_A, npoints, 10);
 
-ninlier = 0;
-fpoints = 8; %number of fitting points
-for i=1:2000
-rd = randi([1 npoints],1,fpoints);
-pR = ref_P(:,rd);
-pD = dst_P(:,rd);
-h = getHomographyMatrix(pR,pD,fpoints);
-rref_P = h*ref_P;
-rref_P(1,:) = rref_P(1,:)./rref_P(3,:);
-rref_P(2,:) = rref_P(2,:)./rref_P(3,:);
-error = (rref_P(1,:) - dst_P(1,:)).^2 + (rref_P(2,:) - dst_P(2,:)).^2;
-n = nnz(error<threshold);
-if(n >= npoints*.95)
-hh=h;
-inliers = find(error<threshold);
-pause(1);
-break;
-elseif(n>ninlier)
-ninlier = n;
-hh=h;
-inliers = find(error<threshold);
-end 
-end
+[newH, newW, newX, newY, xB, yB] = getNewSize(hh, height_wrap, width_wrap, height_unwrap, width_unwrap);
+
+[X,Y] = meshgrid(1:width_wrap,1:height_wrap);
+[XX,YY] = meshgrid(newX:newX+newW-1, newY:newY+newH-1);
+AA = ones(3,newH*newW);
+AA(1,:) = reshape(XX,1,newH*newW);
+AA(2,:) = reshape(YY,1,newH*newW);
+
+AA = hh*AA;
+XX = reshape(AA(1,:)./AA(3,:), newH, newW);
+YY = reshape(AA(2,:)./AA(3,:), newH, newW);
+
+newImage(:,:,1) = interp2(X, Y, double(image_A(:,:,1)), XX, YY);
+newImage(:,:,2) = interp2(X, Y, double(image_A(:,:,2)), XX, YY);
+newImage(:,:,3) = interp2(X, Y, double(image_A(:,:,3)), XX, YY);
 ```
 7.使用估计的变换将一个图像扭曲到另一个图像上。<br>
 ```
@@ -189,13 +176,25 @@ newImage(:,:,3) = warped_image(:,:,3) + newImage(:,:,3);
 ```
 8.创建一个足够大的新图像以容纳全景图并将两个图像合成到其中。<br>
 ```
-final_result=zeros(size(new));
-area=rgb2gray(old);
-old=double(old);
-b=double(b);
-for i=1:3
-    final_result(:,:,i)=area.*new(:,:,i)+(1-area).*b(:,:,i);
-end
+function [newH, newW, x1, y1, x2, y2] = getNewSize(transform, h2, w2, h1, w1)
+
+[X,Y] = meshgrid(1:w2,1:h2);
+AA = ones(3,h2*w2);
+AA(1,:) = reshape(X,1,h2*w2);
+AA(2,:) = reshape(Y,1,h2*w2);
+
+newAA = transform\AA;
+new_left = fix(min([1,min(newAA(1,:)./newAA(3,:))]));
+new_right = fix(max([w1,max(newAA(1,:)./newAA(3,:))]));
+new_top = fix(min([1,min(newAA(2,:)./newAA(3,:))]));
+new_bottom = fix(max([h1,max(newAA(2,:)./newAA(3,:))]));
+
+newH = new_bottom - new_top + 1;
+newW = new_right - new_left + 1;
+x1 = new_left;
+y1 = new_top;
+x2 = 2 - new_left;
+y2 = 2 - new_top;
 ```
 效果展示
 --
