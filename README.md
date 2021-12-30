@@ -37,6 +37,34 @@
 --
 1.加载两个图像，转换为double及gray型。<br>
 2.运用harris子函数检测两个图像中的特征点。<br>
+```
+function [xp, yp, value] = harris(input_image, sigma,thd, r)
+
+g1 = fspecial('gaussian', 7, 1);
+gray_image = imfilter(input_image, g1);
+
+h = fspecial('sobel');
+Ix = imfilter(gray_image,h,'replicate','same');
+Iy = imfilter(gray_image,h','replicate','same');
+
+g = fspecial('gaussian',fix(6*sigma), sigma);
+
+Ix2 = imfilter(Ix.^2, g, 'same').*(sigma^2); 
+Iy2 = imfilter(Iy.^2, g, 'same').*(sigma^2);
+Ixy = imfilter(Ix.*Iy, g, 'same').*(sigma^2);
+
+R = (Ix2.*Iy2 - Ixy.^2)./(Ix2 + Iy2 + eps); 
+
+R([1:20, end-20:end], :) = 0;
+R(:,[1:20,end-20:end]) = 0;
+
+d = 2*r+1; 
+localmax = ordfilt2(R,d^2,true(d)); 
+R = R.*(and(R==localmax, R>thd));
+
+[xp,yp,value] = find(R);
+
+```
 3.在两个图像中的每个关键点周围提取固定大小的补丁，以及简单地通过将每个补丁中的像素值“展平”为一维向量来形成描述符。<br>
 4.计算一幅图像中的每个描述符与另一幅图像中的每个描述符之间的距离。<br>
 5.根据上面获得的成对描述符距离矩阵选择假定的匹配项。<br>
