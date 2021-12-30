@@ -65,7 +65,39 @@ R = R.*(and(R==localmax, R>thd));
 [xp,yp,value] = find(R);
 ```
 3.在两个图像中的每个关键点周围提取固定大小的补丁，并简单地通过将每个补丁中的像素值“展平”为一维向量来形成描述符。<br>
+```
+function [descriptors] = getFeatureDescriptor(input_image, xp, yp, sigma)
+
+g = fspecial('gaussian', 5, sigma);
+blurred_image = imfilter(input_image, g, 'replicate','same');
+
+npoints = length(xp);
+descriptors = zeros(npoints,64);
+
+for i = 1:npoints
+patch = blurred_image(xp(i)-20:xp(i)+19, yp(i)-20:yp(i)+19);
+patch = imresize(patch, .2);
+descriptors(i,:) = reshape((patch - mean2(patch))./std2(patch), 1, 64); 
+end
+```
 4.计算一幅图像中的每个描述符与另一幅图像中的每个描述符之间的距离。<br>
+```
+function n2 = dist2(x, c)
+
+[ndata, dimx] = size(x);
+[ncentres, dimc] = size(c);
+if dimx ~= dimc
+error('Data dimension does not match dimension of centres')
+end
+
+n2 = (ones(ncentres, 1) * sum((x.^2)', 1))' + ...
+ones(ndata, 1) * sum((c.^2)',1) - ...
+2.*(x*(c'));
+
+if any(any(n2<0))
+n2(n2<0) = 0;
+end
+```
 5.根据上面获得的成对描述符距离矩阵选择假定的匹配项。<br>
 ```
 function [hh] = getHomographyMatrix(point_ref, point_src, npoints)
