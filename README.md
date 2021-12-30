@@ -67,10 +67,66 @@ R = R.*(and(R==localmax, R>thd));
 3.在两个图像中的每个关键点周围提取固定大小的补丁，并简单地通过将每个补丁中的像素值“展平”为一维向量来形成描述符。<br>
 4.计算一幅图像中的每个描述符与另一幅图像中的每个描述符之间的距离。<br>
 5.根据上面获得的成对描述符距离矩阵选择假定的匹配项。<br>
+```
+function [hh] = getHomographyMatrix(point_ref, point_src, npoints)
+
+x_ref = point_ref(1,:)';
+y_ref = point_ref(2,:)';
+x_src = point_src(1,:)';
+y_src = point_src(2,:)';
+
+A = zeros(npoints*2,8);
+A(1:2:end,1:3) = [x_ref, y_ref, ones(npoints,1)];
+A(2:2:end,4:6) = [x_ref, y_ref, ones(npoints,1)];
+A(1:2:end,7:8) = [-x_ref.*x_src, -y_ref.*x_src];
+A(2:2:end,7:8) = [-x_ref.*y_src, -y_ref.*y_src];
+
+B = [x_src, y_src];
+B = reshape(B',npoints*2,1);
+
+h = A\B;
+
+hh = [h(1),h(2),h(3);h(4),h(5),h(6);h(7),h(8),1];
+```
 6.运行 RANSAC 以估计仿射变换并将一个图像映射到另一个图像上。<br>
+```
+function [hh, inliers] = ransacfithomography(ref_P, dst_P, npoints, threshold)
+
+ninlier = 0;
+fpoints = 8; %number of fitting points
+for i=1:2000
+rd = randi([1 npoints],1,fpoints);
+pR = ref_P(:,rd);
+pD = dst_P(:,rd);
+h = getHomographyMatrix(pR,pD,fpoints);
+rref_P = h*ref_P;
+rref_P(1,:) = rref_P(1,:)./rref_P(3,:);
+rref_P(2,:) = rref_P(2,:)./rref_P(3,:);
+error = (rref_P(1,:) - dst_P(1,:)).^2 + (rref_P(2,:) - dst_P(2,:)).^2;
+n = nnz(error<threshold);
+if(n >= npoints*.95)
+hh=h;
+inliers = find(error<threshold);
+pause(1);
+break;
+elseif(n>ninlier)
+ninlier = n;
+hh=h;
+inliers = find(error<threshold);
+end 
+end
+```
 7.使用估计的变换将一个图像扭曲到另一个图像上。<br>
 8.创建一个足够大的新图像以容纳全景图并将两个图像合成到其中。<br>
-
+```
+final_result=zeros(size(new));
+area=rgb2gray(old);
+old=double(old);
+b=double(b);
+for i=1:3
+    final_result(:,:,i)=area.*new(:,:,i)+(1-area).*b(:,:,i);
+end
+```
 效果展示
 --
 * 国会大厦<br>
